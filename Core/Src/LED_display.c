@@ -21,9 +21,9 @@ const int b7SegmentTable_Mode[4] = {
 	0b1000000, /* mode 3 - line A is displayed */
 };
 
-void display_num(int num) {
+void display_num(int num, int dot) {
 	//function that displays multi-digit numbers
-	if (num < 1000) {
+	if (num < 10000) {
 
 		if (num < 10) {
 			GPIOC->ODR = (0b11100 << 7) | b7SegmentTable[num] ;
@@ -31,17 +31,27 @@ void display_num(int num) {
 			HAL_Delay(10);
 
 		} else if (num >= 10 && num < 100) {
-			GPIOC->ODR = (0b11010 << 7) | b7SegmentTable[num / 10];
+			GPIOC->ODR = (0b1101 << 8) | (dot << 7) | b7SegmentTable[num / 10];
 			HAL_Delay(1);
-			GPIOC->ODR = (0b11100 << 7) | b7SegmentTable[num % 10];
+			GPIOC->ODR = (0b1110 << 8) | b7SegmentTable[num % 10];
 			HAL_Delay(1);
 
 		} else if (num >= 100 && num < 1000) {
-			GPIOC->ODR =(0b10110 << 7) | b7SegmentTable[num / 100];
+			GPIOC->ODR = (0b1011 << 8) | b7SegmentTable[num / 100];
 			HAL_Delay(1);
-			GPIOC->ODR = (0b11010 << 7) | b7SegmentTable[num % 100 / 10];
+			GPIOC->ODR = (0b1101 << 8) | (dot << 7) | b7SegmentTable[num % 100 / 10];
 			HAL_Delay(1);
-			GPIOC->ODR = (0b11100 << 7) | b7SegmentTable[num % 100 % 10];
+			GPIOC->ODR = (0b1110 << 8) | b7SegmentTable[num % 100 % 10];
+			HAL_Delay(1);
+
+		} else if (num >= 1000 && num < 10000) {
+			GPIOC->ODR = (0b0111 << 8) | b7SegmentTable[num / 1000];
+			HAL_Delay(1);
+			GPIOC->ODR = (0b1011 << 8) | b7SegmentTable[num % 1000 / 100];
+			HAL_Delay(1);
+			GPIOC->ODR = (0b1101 << 8) | (dot << 7) |  b7SegmentTable[num % 1000 % 100 / 10];
+			HAL_Delay(1);
+			GPIOC->ODR = (0b1110 << 8) | b7SegmentTable[num % 1000 % 100 % 10];
 			HAL_Delay(1);
 		}
 	}
@@ -53,13 +63,11 @@ void display_mode(int mode) {
     HAL_Delay(1);
 }
 
-void display(int num, int mode){
+void display(int num, int mode, int dot){
 	//function that displays mode and numbers simultaneously
 	display_mode(mode);
-	display_num(num);
+	display_num(num, dot);
 }
-
-
 
 
 
